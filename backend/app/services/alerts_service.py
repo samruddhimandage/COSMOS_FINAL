@@ -30,7 +30,10 @@ def get_alerts(satellite_id=None, status=None, limit=100):
         SELECT *
         FROM alerts
         WHERE
-            (:satellite_id IS NULL OR satellite_id = :satellite_id)
+            (
+                CAST(:satellite_id AS INTEGER) IS NULL
+                OR satellite_id = CAST(:satellite_id AS INTEGER)
+            )
             AND
             (
                 CAST(:status AS VARCHAR(20)) IS NULL

@@ -42,7 +42,10 @@ def get_telemetry(
             signal_strength
         FROM telemetry
         WHERE
-    (:satellite_id IS NULL OR satellite_id = :satellite_id)
+    (
+        CAST(:satellite_id AS INTEGER) IS NULL
+        OR satellite_id = CAST(:satellite_id AS INTEGER)
+    )
     AND (
         CAST(:start_time AS TIMESTAMPTZ) IS NULL
         OR timestamp >= CAST(:start_time AS TIMESTAMPTZ)
