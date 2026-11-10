@@ -55,20 +55,26 @@ def get_alerts(satellite_id=None, status=None, limit=100):
     return [dict(record) for record in records]
 
 
+
 def update_alert_status(alert_id, status):
     """Update an alert's status."""
 
     query = text("""
-        SELECT *
-        FROM alerts
-        WHERE
-            (:satellite_id IS NULL OR satellite_id = :satellite_id)
-            AND (
-                CAST(:status AS VARCHAR(20)) IS NULL
-                OR status = CAST(:status AS VARCHAR(20))
-            )
-        ORDER BY created_at DESC
-        LIMIT :limit
+        UPDATE alerts
+        SET
+            status = CAST(:status AS VARCHAR(20)),
+            acknowledged_at = CASE
+                WHEN CAST(:status AS VARCHAR(20)) = 'ACKNOWLEDGED'
+                THEN CURRENT_TIMESTAMP
+                ELSE acknowledged_at
+            END,
+            resolved_at = CASE
+                WHEN CAST(:status AS VARCHAR(20)) = 'RESOLVED'
+                THEN CURRENT_TIMESTAMP
+                ELSE resolved_at
+            END
+        WHERE id = :alert_id
+        RETURNING *
     """)
 
     with engine.begin() as connection:
